@@ -1,0 +1,143 @@
+" mkdir backend
+cd backend
+npminit -y
+npm install express mongoose corsdotenv
+
+
+const mongoose = require("mongoose");
+
+consttodoSchema = newmongoose.Schema({
+text: {
+type: String,
+required: true
+  },
+completed: {
+type: Boolean,
+default: false
+  }
+});
+
+module.exports = mongoose.model("Todo", todoSchema);
+
+
+const express = require("express");
+const router = express.Router();
+constTodo = require("../models/Todo");
+
+// GET all todos
+router.get("/", async (req, res) => {
+consttodos = awaitTodo.find();
+res.json(todos);
+});
+
+// POST create new todo
+router.post("/", async (req, res) => {
+const{ text } = req.body;
+constnewTodo = newTodo({ text });
+constsavedTodo = awaitnewTodo.save();
+res.json(savedTodo);
+});
+
+// PUT update todo (mark complete)
+router.put("/:id", async (req, res) => {
+const{ id } = req.params;
+const updated = awaitTodo.findByIdAndUpdate(id, req.body, { new: true });
+res.json(updated);
+});
+
+// DELETE remove todo
+router.delete("/:id", async (req, res) => {
+const{ id } = req.params;
+awaitTodo.findByIdAndDelete(id);
+res.json({ message: "Todo deleted" });
+});
+
+module.exports = router;
+
+
+const express = require("express");
+const mongoose = require("mongoose");
+constcors = require("cors");
+require("dotenv").config();
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+constPORT = process.env.PORT || 5000;
+constMONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/todoapp";
+
+// Connect to MongoDB
+mongoose.connect(MONGO_URI)
+.then(() =>console.log("✅ MongoDB connected"))
+.catch((err) =>console.error(err));
+
+// Routes
+consttodoRoutes = require("./routes/todoRoutes");
+app.use("/api/todos", todoRoutes);
+
+// Start server
+app.listen(PORT, () =>console.log(`🚀 Server running on port ${PORT}`));
+
+ Step 5 — Example .env
+MONGO_URI=mongodb://localhost:27017/todoapp
+PORT=5000
+
+
+ 
+In your React app (frontend/src/App.js):
+importReact, { useEffect, useState } from"react";
+importaxiosfrom"axios";
+
+constAPI_URL = "http://localhost:5000/api/todos";
+
+exportdefaultfunctionApp() {
+const [todos, setTodos] = useState([]);
+const [text, setText] = useState("");
+
+useEffect(() => {
+axios.get(API_URL).then(res =>setTodos(res.data));
+  }, []);
+
+constaddTodo = async () => {
+const res = awaitaxios.post(API_URL, { text });
+setTodos([...todos, res.data]);
+setText("");
+  };
+
+consttoggleComplete = async (id, completed) => {
+const res = awaitaxios.put(`${API_URL}/${id}`, { completed: !completed });
+setTodos(todos.map(t => (t._id === id ? res.data : t)));
+  };
+
+constdeleteTodo = async (id) => {
+awaitaxios.delete(`${API_URL}/${id}`);
+setTodos(todos.filter(t =>t._id !== id));
+  };
+
+return (
+<div>
+<h1>To-Do App</h1>
+<inputvalue={text}onChange={e =>setText(e.target.value)} />
+<buttononClick={addTodo}>Add</button>
+
+<ul>
+        {todos.map(todo => (
+<likey={todo._id}>
+<span
+onClick={() =>toggleComplete(todo._id, todo.completed)}
+              style={{
+textDecoration: todo.completed ? "line-through" : "none",
+
+
+              }}
+>
+              {todo.text}
+</span>
+<buttononClick={() =>deleteTodo(todo._id)}>❌</button>
+</li>
+        ))}
+</ul>
+</div>
+  );
+}
